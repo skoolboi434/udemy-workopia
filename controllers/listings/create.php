@@ -1,0 +1,1 @@
+<?php loadView('listings/create');
