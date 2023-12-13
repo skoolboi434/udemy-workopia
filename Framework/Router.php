@@ -1,5 +1,6 @@
 <?php
 namespace Framework;
+use App\Controllers\ErrorController;
 class Router {
   protected $routes = [];
 
@@ -7,7 +8,7 @@ class Router {
    * Add a new route
    * @param string $method
    * @param string $uri
-   * @param string $controller
+   * @param string $action
    * @return void
    */
   public function registerRoute($method, $uri, $action){
@@ -67,47 +68,68 @@ class Router {
   }
 
   /**
-   * Load error page
-   * @param int $httpCode
-   * @return void
-   */
-
-   public function error($httpCode = 404) {
-    http_response_code($httpCode);
-    loadView("error/{$httpCode}");
-    exit();
-   }
-
-  /**
    * Route the request
    * 
    * @param string $uri
    * @param string $method
    * @return void
    */
-  public function route($uri, $method) {
+  public function route($uri) {
+    $requestMethod = $_SERVER['REQUEST_METHOD'];
     foreach($this->routes as $route) {
-      if($route['uri'] === $uri && $route['method'] === $method) {
-        
-        // Extract controller and controller method
-        $controller = 'App\\Controllers\\' . $route['controller'];
-        inspect($controller);
-        $controllerMethod = $route['controllerMethod'];
 
-        // Check if the class exists before instantiating
-        if (class_exists($controller)) {
-            // Instantiate the class and method
-            $controllerInstance = new $controller();
-            $controllerInstance->$controllerMethod();
-            return;
-        } else {
-            // Handle the case where the class is not found
-            echo "Controller class not found: $controller";
-            return;
+      // Split the current URI into segments
+      $uriSegments = explode('/', trim($uri, '/'));
+
+      // Split the route URI into segments
+      $routeSegments = explode('/', trim($route['uri'], '/'));
+
+      $match = true;
+
+      // Check if the number of segments matches
+
+      if(count($uriSegments) === count($routeSegments) && strtoupper($route['method'] === $requestMethod)){
+        $params = [];
+
+        $match = true;
+
+        for ($i = 0; $i < count($uriSegments); $i++) {
+          // If uri's don't match and there is no param
+          if($routeSegments[$i] != $uriSegments[$i] && !preg_match('/\{(.+?)\}/', $routeSegments[$i])) {
+            $match = false;
+            break;
+          }
+
+          // Check for the param and add to $params array
+          if(preg_match('/\{(.+?)\}/', $routeSegments[$i], $matches)) {
+            $params[$matches[1]] = $uriSegments[$i];
+            
+          }
         }
+
+        if($match) {
+          // Extract controller and controller method
+          $controller = 'App\\Controllers\\' . $route['controller'];
+          $controllerMethod = $route['controllerMethod'];
+
+          // Check if the class exists before instantiating
+          if (class_exists($controller)) {
+              // Instantiate the class and method
+              $controllerInstance = new $controller();
+              $controllerInstance->$controllerMethod($params);
+              return;
+          } else {
+              // Handle the case where the class is not found
+              echo "Controller class not found: $controller";
+              return;
+          }
+        }
+
       }
+
+      
     }
 
-    $this->error();
+    ErrorController::notFound();
   }
 }
