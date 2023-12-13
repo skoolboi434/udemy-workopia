@@ -1,17 +1,20 @@
 <?php
+
 namespace Framework;
 
 use PDO;
-class Database {
+
+class Database
+{
   public $conn;
 
   /**
-   * Constructor for DB class
+   * Constructor for Database class
    * 
    * @param array $config
-   * 
    */
-  public function __construct($config){
+  public function __construct($config)
+  {
     $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['dbname']}";
 
     $options = [
@@ -21,8 +24,7 @@ class Database {
 
     try {
       $this->conn = new PDO($dsn, $config['username'], $config['password'], $options);
-
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
       throw new Exception("Database connection failed: {$e->getMessage()}");
     }
   }
@@ -32,21 +34,22 @@ class Database {
    * 
    * @param string $query
    * 
-   * @return PDOStatement
-   * @throws PDOException
+   * @return \PDOStatement
+   * @throws \PDOException
    */
-  public function query($query, $params = []) {
+  public function query($query, $params = [])
+  {
     try {
       $sth = $this->conn->prepare($query);
 
       // Bind named params
-      foreach($params as $param => $value) {
+      foreach ($params as $param => $value) {
         $sth->bindValue(':' . $param, $value);
       }
 
       $sth->execute();
       return $sth;
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
       throw new Exception("Query failed to execute: {$e->getMessage()}");
     }
   }
