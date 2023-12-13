@@ -65,63 +65,130 @@ class ListingController
    * 
    * @return void
    */
-  public function store(){
+  // public function store(){
+  //   $allowedFields = ['title', 'description', 'salary', 'tags', 'company', 
+  // 'address', 'city', 'state', 'phone', 'email', 'requirements', 'benefits'];
+
+  //   $newListingData = array_intersect_key($_POST, array_flip($allowedFields));
+
+  //   $newListingData['user_id'] = 1;
+    
+  //   $newListingData = array_map('sanitize', $newListingData);
+
+  //   // Debugging
+  //   inspect($newListingData['user_id']);
+  //   inspectAndDie($newListingData);
+
+  //   $requiredFields = ['title', 'description', 'email', 'city', 'state'];
+
+  //   $errors = [];
+
+  //   foreach($requiredFields as $field) {
+  //     if(empty($newListingData[$field]) || !Validation::string($newListingData[$field])) {
+  //       $errors[$field] = ucfirst($field) . ' is required';
+  //     }
+  //   }
+
+  //   if(!empty($errors)) {
+  //     // Reload view with errors
+  //     loadView('listings/create', [
+  //       'errors' => $errors,
+  //       'listing' => $newListingData
+  //     ]);
+  //   } else {
+  //     // Submit data
+
+  //     $fields = [];
+      
+  //     foreach($newListingData as $field => $value) {
+  //       $fields[] = $field;
+  //     }
+
+  //     $fields = implode(', ', $fields);
+
+  //     $values = [];
+
+  //     foreach($newListingData as $field => $value) {
+  //       // Convert emtpy strings to null
+  //       if($value === '') {
+  //         $newListingData[$field] = null;
+  //       }
+  //       $values[] = ':' . $field;
+  //     }
+
+  //     $values = implode(', ', $values);
+
+  //     $query = "INSERT INTO listings ({$fields}) VALUES ({$values})";
+      
+  //     $this->db->query($query, $newListingData);
+
+  //     redirect('/listings');
+
+  //   }
+  // }
+
+  public function store()
+{
     $allowedFields = ['title', 'description', 'salary', 'tags', 'company', 
-  'address', 'city', 'state', 'phone', 'email', 'requirements', 'benefits'];
+      'address', 'city', 'state', 'phone', 'email', 'requirements', 'benefits'];
 
     $newListingData = array_intersect_key($_POST, array_flip($allowedFields));
 
+    // Set user_id directly in the array
     $newListingData['user_id'] = 1;
-    inspect($newListingData['user_id']);
-    $newListingData = array_map('sanitize', $newListingData);
 
-    inspectAndDie($newListingData);
+    // Apply sanitize to all values in the array
+    array_walk($newListingData, 'sanitize' );
 
-    $requiredFields = ['title', 'description', 'email', 'city', 'state'];
+    // Debugging
+    // inspect($newListingData['user_id']);
+    // inspectAndDie($newListingData);
+
+    $requiredFields = ['title', 'description', 'salary', 'email', 'city', 'state'];
 
     $errors = [];
 
-    foreach($requiredFields as $field) {
-      if(empty($newListingData[$field]) || !Validation::string($newListingData[$field])) {
-        $errors[$field] = ucfirst($field) . ' is required';
-      }
-    }
-
-    if(!empty($errors)) {
-      // Reload view with errors
-      loadView('listings/create', [
-        'errors' => $errors,
-        'listing' => $newListingData
-      ]);
-    } else {
-      // Submit data
-
-      $fields = [];
-      
-      foreach($newListingData as $field => $value) {
-        $fields[] = $field;
-      }
-
-      $fields = implode(', ', $fields);
-
-      $values = [];
-
-      foreach($newListingData as $field => $value) {
-        // Convert emtpy strings to null
-        if($value === '') {
-          $newListingData[$field] = null;
+    foreach ($requiredFields as $field) {
+        if (empty($newListingData[$field]) || !Validation::string($newListingData[$field])) {
+            $errors[$field] = ucfirst($field) . ' is required';
         }
-        $values[] = ':' . $field;
-      }
-
-      $values = implode(', ', $values);
-
-      $query = "INSERT INTO listings ({$fields}) VALUES ({$values})";
-      
-      $this->db->query($query, $newListingData);
-
-      redirect('/listings');
-
     }
-  }
+
+    if (!empty($errors)) {
+        // Reload view with errors
+        loadView('listings/create', [
+            'errors' => $errors,
+            'listing' => $newListingData
+        ]);
+    } else {
+        // Submit data
+
+        $fields = [];
+
+        foreach ($newListingData as $field => $value) {
+            $fields[] = $field;
+        }
+
+        $fields = implode(', ', $fields);
+
+        $values = [];
+
+        foreach ($newListingData as $field => $value) {
+            // Convert empty strings to null
+            if ($value === '') {
+                $newListingData[$field] = null;
+            }
+            $values[] = ':' . $field;
+        }
+
+        $values = implode(', ', $values);
+
+        $query = "INSERT INTO listings ({$fields}) VALUES ({$values})";
+
+        $this->db->query($query, $newListingData);
+
+        redirect('/listings');
+    }
+}
+
 }

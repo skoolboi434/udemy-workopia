@@ -88,8 +88,13 @@
      * @param string $dirty
      * @return string
      */
-    function sanitize($dirty){
-      return filter_var(trim($dirty, FILTER_SANITIZE_SPECIAL_CHARS));
+    function sanitize(&$dirty, $key){
+      // Check if the value is 'user_id' and cast it to an integer
+      if ($key === 'user_id') {
+        $dirty = (int)$dirty;
+      } else {
+          $dirty = filter_var(trim($dirty, FILTER_SANITIZE_SPECIAL_CHARS));
+      }
     }
 
     /**
