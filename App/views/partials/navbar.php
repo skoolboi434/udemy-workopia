@@ -3,7 +3,7 @@ use Framework\Session;
 
 $user = Session::get('user');
 
-
+//Session::get('user')['name']
 ?>
 
 <!-- Nav -->
